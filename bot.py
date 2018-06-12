@@ -1,19 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# Simple Bot to reply to Telegram messages
-# This program is dedicated to the public domain under the CC0 license.
-"""
-This Bot uses the Updater class to handle the bot.
-First, a few callback functions are defined. Then, those functions are passed to
-the Dispatcher and registered at their respective places.
-Then, the bot is started and runs until we press Ctrl-C on the command line.
-Usage:
-Example of a bot-user conversation using ConversationHandler.
-Send /start to initiate the conversation.
-Press Ctrl-C on the command line or send a signal to the process to stop the
-bot.
-"""
 
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler,
@@ -28,72 +14,60 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 TOKEN='519244432:AAHZ33ieu2GwHI-sOYBGFdWlnyR3Ur_QW-s'
+CODE='t0Ry2e94'
 
-CHOOSING, TYPING_REPLY, TYPING_CHOICE = range(3)
+story = [u'Вас зовут Даша, вам 26 лет, и вы приехали в Москву из маленького города немного поразвлечься и устроиться на работу.', u'В своем городе вы работали продавщицей в магазинчике на автобусной станции, где брали в основном сигареты, водку, пиво, семечки и жвачку. Вы не собирались посвящать себя работе и карьере, и такая работа идеально подходила для того, чтобы вообще не обращать на нее внимания./n/tВ Москву поехали скорее из любопытства. Вы бывали здесь и раньше, но город вас все равно еще пугает обилием людей и скоростью проносящихся мимо машин. Вы неспособны за всем этим уследить, за каждым углом вам мерещится что-то враждебное.  Плотно прижимая сумку к себе,  вы засыпаете в зале ожидания Павелецкого вокзала.']
 
-reply_keyboard = [['Age', 'Favourite colour'],
-                  ['Number of siblings', 'Something else...'],
-                  ['Done']]
+CHOOSING, TYPING_REPLY = range(2)
+
+reply_keyboard = [[u'Далее']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-
-
-def facts_to_str(user_data):
-    facts = list()
-
-    for key, value in user_data.items():
-        facts.append('{} - {}'.format(key, value))
-
-    return "\n".join(facts).join(['\n', '\n'])
 
 
 def start(bot, update):
     update.message.reply_text(
-        "Hi! My name is Doctor Botter. I will hold a more complex conversation with you. "
-        "Why don't you tell me something about yourself?",
-        reply_markup=markup)
-
-    return CHOOSING
-
-
-def regular_choice(bot, update, user_data):
-    text = update.message.text
-    user_data['choice'] = text
-    update.message.reply_text(
-        'Your {}? Yes, I would love to hear about that!'.format(text.lower()))
+        u'Привет! Чтобы начать игру, пожалуйста, отправьте боту код, полученный от организаторов.')
 
     return TYPING_REPLY
 
 
-def custom_choice(bot, update):
-    update.message.reply_text('Alright, please send me the category first, '
-                              'for example "Most impressive skill"')
+def regular_choice(bot, update, user_data):
+    step = user_data.get('step', 0)
+    if step < len(story):
+        storyline = story[step]
+    else:
+        storyline = u'Далее текст игры пока не написан. Ждите обновлений!'
+        done(bot, update, user_data)
 
-    return TYPING_CHOICE
+    update.message.reply_text(
+        storyline,
+        reply_markup=markup)
 
-
-def received_information(bot, update, user_data):
-    text = update.message.text
-    category = user_data['choice']
-    user_data[category] = text
-    del user_data['choice']
-
-    update.message.reply_text("Neat! Just so you know, this is what you already told me:"
-                              "{}"
-                              "You can tell me more, or change your opinion on something.".format(
-                                  facts_to_str(user_data)), reply_markup=markup)
+    user_data['step'] = user_data.get('step', 0) + 1
 
     return CHOOSING
 
 
+def received_information(bot, update, user_data):
+    text = update.message.text
+    user_data['code'] = text
+    
+    if text == CODE:
+        user_data['verified'] = True
+        update.message.reply_text(u'Спасибо, код подтвержден. Приятной игры!')
+
+        return CHOOSING
+
+    else:
+        user_data['verified'] = False
+        update.message.reply_text(u'Вы ввели {}. Попробуйте еще раз.'.format(user_data['code']))
+
+        return TYPING_REPLY
+
+
 def done(bot, update, user_data):
-    if 'choice' in user_data:
-        del user_data['choice']
-
-    update.message.reply_text("I learned these facts about you:"
-                              "{}"
-                              "Until next time!".format(facts_to_str(user_data)))
-
     user_data.clear()
+
     return ConversationHandler.END
 
 
@@ -109,22 +83,15 @@ def main():
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
 
-    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
+    # Add conversation handler
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [RegexHandler('^(Age|Favourite colour|Number of siblings)$',
+            CHOOSING: [RegexHandler(u'^Далее$',
                                     regular_choice,
                                     pass_user_data=True),
-                       RegexHandler('^Something else...$',
-                                    custom_choice),
                        ],
-
-            TYPING_CHOICE: [MessageHandler(Filters.text,
-                                           regular_choice,
-                                           pass_user_data=True),
-                            ],
 
             TYPING_REPLY: [MessageHandler(Filters.text,
                                           received_information,
@@ -132,7 +99,7 @@ def main():
                            ],
         },
 
-        fallbacks=[RegexHandler('^Done$', done, pass_user_data=True)]
+        fallbacks=[]
     )
 
     dp.add_handler(conv_handler)
