@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 TOKEN='519244432:AAHZ33ieu2GwHI-sOYBGFdWlnyR3Ur_QW-s'
 CODE='t0Ry2e94'
 
-story = [u'Вас зовут Даша, вам 26 лет, и вы приехали в Москву из маленького города немного поразвлечься и устроиться на работу.', u'В своем городе вы работали продавщицей в магазинчике на автобусной станции, где брали в основном сигареты, водку, пиво, семечки и жвачку. Вы не собирались посвящать себя работе и карьере, и такая работа идеально подходила для того, чтобы вообще не обращать на нее внимания./n/tВ Москву поехали скорее из любопытства. Вы бывали здесь и раньше, но город вас все равно еще пугает обилием людей и скоростью проносящихся мимо машин. Вы неспособны за всем этим уследить, за каждым углом вам мерещится что-то враждебное.  Плотно прижимая сумку к себе,  вы засыпаете в зале ожидания Павелецкого вокзала.']
+story = [u'Вас зовут Даша, вам 26 лет, и вы приехали в Москву из маленького города немного поразвлечься и устроиться на работу.', u'В своем городе вы работали продавщицей в магазинчике на автобусной станции, где брали в основном сигареты, водку, пиво, семечки и жвачку. Вы не собирались посвящать себя работе и карьере, и такая работа идеально подходила для того, чтобы вообще не обращать на нее внимания.\n\tВ Москву поехали скорее из любопытства. Вы бывали здесь и раньше, но город вас все равно еще пугает обилием людей и скоростью проносящихся мимо машин. Вы неспособны за всем этим уследить, за каждым углом вам мерещится что-то враждебное.  Плотно прижимая сумку к себе,  вы засыпаете в зале ожидания Павелецкого вокзала.']
 
 CHOOSING, TYPING_REPLY = range(2)
 
 reply_keyboard = [[u'Далее']]
-markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
 
 
 def start(bot, update):
@@ -32,20 +32,25 @@ def start(bot, update):
 
 
 def regular_choice(bot, update, user_data):
-    step = user_data.get('step', 0)
-    if step < len(story):
-        storyline = story[step]
+    if user_data.get('verified', False):
+
+        step = user_data.get('step', 0)
+        if step < len(story):
+            storyline = story[step]
+        else:
+            storyline = u'Далее текст игры пока не написан. Ждите обновлений!'
+            done(bot, update, user_data)
+
+        update.message.reply_text(
+            storyline,
+            reply_markup=markup)
+
+        user_data['step'] = user_data.get('step', 0) + 1
+
+        return CHOOSING
+
     else:
-        storyline = u'Далее текст игры пока не написан. Ждите обновлений!'
-        done(bot, update, user_data)
-
-    update.message.reply_text(
-        storyline,
-        reply_markup=markup)
-
-    user_data['step'] = user_data.get('step', 0) + 1
-
-    return CHOOSING
+        start(bot, update)
 
 
 def received_information(bot, update, user_data):
@@ -88,7 +93,7 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [RegexHandler(u'^Далее$',
+            CHOOSING: [RegexHandler(u'^(Далее|Спасибо, код подтвержден. Приятной игры!)$',
                                     regular_choice,
                                     pass_user_data=True),
                        ],
