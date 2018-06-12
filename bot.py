@@ -68,7 +68,7 @@ def received_information(bot, update, user_data):
     
     if text == CODE:
         user_data['verified'] = True
-        update.message.reply_text(u'Спасибо, код подтвержден. Приятной игры!')
+        update.message.reply_text(u'Спасибо, код подтвержден. Приятной игры!', reply_markup=start_markup)
 
         return CHOOSING
 
