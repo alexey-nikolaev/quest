@@ -22,8 +22,10 @@ story = [u'Вас зовут Даша, вам 26 лет, и вы приехал�
 CHOOSING, TYPING_REPLY = range(2)
 
 reply_keyboard = [[u'Далее']]
+start_keyboard = [[u'Начать игру']]
 final_keyboard = [[u'Закончить игру']]
-markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False, resize_keyboard=True)
+markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
+start_markup = ReplyKeyboardMarkup(start_keyboard, one_time_keyboard=True, resize_keyboard=True)
 final_markup = ReplyKeyboardMarkup(final_keyboard, one_time_keyboard=True, resize_keyboard=True)
 
 
@@ -103,7 +105,7 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [RegexHandler(u'^(Далее|' + CODE + u')$',
+            CHOOSING: [RegexHandler(u'^(Далее|Начать игру)$',
                                     regular_choice,
                                     pass_user_data=True),
                        ],
