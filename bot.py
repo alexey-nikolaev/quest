@@ -6,6 +6,7 @@ from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, Rege
                           ConversationHandler)
 
 import logging
+import re
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -39,7 +40,6 @@ def regular_choice(bot, update, user_data):
             storyline = story[step]
         else:
             storyline = u'Далее текст игры пока не написан. Ждите обновлений!'
-            done(bot, update, user_data)
 
         update.message.reply_text(
             storyline,
@@ -93,7 +93,7 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [RegexHandler(u'^(Далее|Спасибо, код подтвержден. Приятной игры!)$',
+            CHOOSING: [RegexHandler(u'^(Далее|' + re.escape(u'Спасибо, код подтвержден. Приятной игры!') + u')$',
                                     regular_choice,
                                     pass_user_data=True),
                        ],
@@ -104,7 +104,7 @@ def main():
                            ],
         },
 
-        fallbacks=[]
+        fallbacks=[RegexHandler(u'^' + re.escape(u'Далее текст игры пока не написан. Ждите обновлений!') + u'$', done, pass_user_data=True)]
     )
 
     dp.add_handler(conv_handler)
