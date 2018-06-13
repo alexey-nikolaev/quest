@@ -44,9 +44,9 @@ def regular_choice(bot, update, user_data):
             storyline = story[step]
 
             if storyline[:5] == 'loc::':
-                lat_lon = map(float, storyline[5:].split(', '))
-                lat = lat_lon[0]
-                lon = lat_lon[1]
+                lat_lon = storyline[5:].split(', ')
+                lat = float(lat_lon[0])
+                lon = float(lat_lon[1])
                 update.message.reply_location(Location(lon, lat), reply_markup=markup)
             else:
                 update.message.reply_text(
