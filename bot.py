@@ -101,7 +101,7 @@ def regular_talk(bot, update, user_data):
     parts = storyline[5:].split('::')
     options = parts[1].split('||')
 
-    responses = parts[2].split(', ')
+    responses = parts[2].split('||')
     important = parts[3].split(', ')
 
     if talk == u'Закончить разговор':
@@ -117,7 +117,7 @@ def regular_talk(bot, update, user_data):
     else:
         ind = int(talk)-1
         resp = responses[ind]
-        del user_data['talks_available'][ind]
+        user_data['talks_available'].remove(talk)
 
     buttons = user_data['talks_available']
     opt_txt = u'\n'.join([b+') '+options[int(b)-1] for b in buttons])
