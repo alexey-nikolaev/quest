@@ -69,7 +69,7 @@ def regular_choice(bot, update, user_data):
                 user_data['talks_available'] = buttons
 
                 talks_keyboard = [[buttons], [[u'Закончить разговор']]]
-                talks_markup = KeyboardMarkup(talks_keyboard, one_time_keyboard=True, resize_keyboard=True)
+                talks_markup = ReplyKeyboardMarkup(talks_keyboard, one_time_keyboard=True, resize_keyboard=True)
                 update.message.reply_text(parts[0]+'\n'+opt_txt, reply_markup=talks_markup)
 
                 return TALKS
@@ -123,7 +123,7 @@ def regular_talk(bot, update, user_data):
     opt_txt = u'\n'.join([b+') '+options[int(b)-1] for b in buttons])
 
     talks_keyboard = [[buttons], [[u'Закончить разговор']]]
-    talks_markup = KeyboardMarkup(talks_keyboard, one_time_keyboard=True, resize_keyboard=True)
+    talks_markup = ReplyKeyboardMarkup(talks_keyboard, one_time_keyboard=True, resize_keyboard=True)
     
     update.message.reply_text(
                     resp+'\n'+opt_txt,
