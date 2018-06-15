@@ -105,7 +105,7 @@ def regular_talk(bot, update, user_data):
     important = parts[3].split(', ')
 
     if talk == u'Закончить разговор':
-        if len(set(important) & set(buttons)) == 0:
+        if len(set(important) & set(user_data['talks_available'])) == 0:
             user_data['step'] = user_data.get('step', 0) + 1
             storyline = story[step]
             update.message.reply_text(
